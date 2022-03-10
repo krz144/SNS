@@ -1,5 +1,6 @@
 from datetime import date
 import numpy as np
+import matplotlib.pyplot as plt
     
 def read_yuma(almanac_file):
     ''' 
@@ -84,7 +85,7 @@ def satpos(nav, week, tow):
 
     # tk = tow - toa
     tk = t - toa_weeks
-    print(tk)  # print(tk/86400)
+    # print(tk)  # print(tk/86400)
 
     # Krok 2 algorytmu
     a = sqrta**2
@@ -110,11 +111,66 @@ def satpos(nav, week, tow):
     Xk = xk * np.cos(Omega_k) - yk * np.cos(i) * np.sin(Omega_k)
     Yk = xk * np.sin(Omega_k) + yk * np.cos(i) * np.cos(Omega_k)
     Zk = yk * np.sin(i)
-    return (Xk, Yk, Zk)
+    return np.array([Xk, Yk, Zk])
 
 
-wynik = satpos(nav, week, tow)
-print(wynik)
+satelita = satpos(nav, week, tow)
+print(satelita)
+
+
+# Zajęcia 2
+def geo2xyz(fi, lam, h, a=6378137, e2=0.00669437999013):
+    """funkcja zamienia współrzędne geodezyjne na kartezjańskie fi, lam podajemy w radianach do wzorów, do fcji w deg"""
+    fi = np.deg2rad(fi)
+    lam = np.deg2rad(lam)
+    N = a / np.sqrt(1 - e2 * np.sin(fi) ** 2)
+    x = (N + h) * np.cos(fi) * np.cos(lam)
+    y = (N + h) * np.cos(fi) * np.sin(lam)
+    z = (N * (1 - e2) + h) * np.sin(fi)
+    return np.array([x, y, z])
+
+def xyz2neu(fi, lam, A, B):
+    # def xyz2neu(A:punktodniesienia/startowy, B:koniecwektora):
+    """funkcja zamienia wsp kartezjańskie na topocentryczne neu
+    A, B reprezentują punkty, A to początek, B to koniec wektora
+    A, B są typu np.array i mają 3 współrzędne: x, y, z
+    fi, lam to współrzędne punktu A potrzebne do macierzy obrotu"""
+    # x, y, z -> north, east, up
+    # fi, lambda, lotniska
+    # wektor AB
+    fi = np.deg2rad(fi)
+    lam = np.deg2rad(lam)
+    rotation_matrix = np.array([
+        [-1*np.sin(fi)*np.cos(lam), -1*np.sin(lam), np.cos(fi)*np.cos(lam)],
+        [-1*np.sin(fi)*np.sin(lam), np.cos(lam), np.cos(fi)*np.sin(lam)],
+        [np.cos(fi), 0, np.sin(fi)]
+    ])
+    vector = B - A
+    return rotation_matrix.transpose() @ vector
+
+fi, lam, h = 52, 21, 100
+odbiornik = geo2xyz(fi, lam, h)  # miejsce obserwacji, niekoniecznie odbiornik
+print(f'{odbiornik=}')
+
+
+# print(f'{satelita-odbiornik=}')
+
+# fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+# ax.scatter(3, 2)
+# plt.show()
+
+for sat in navall:
+    Xs = satpos(sat, week, tow)
+    Xr = odbiornik
+    # Xsr = Xs - Xr
+    neu = xyz2neu(52, 21, Xr, Xs)
+    n, e, u = neu
+    Az = np.arctan2(e,n)  # arctan2 ???  # azymut
+    el = np.arcsin(u/np.sqrt(n**2 + e**2 + u**2))  # elewacja
+    azst = np.rad2deg(Az)
+    elst = np.rad2deg(el)
+    prn = sat[0]
+    print(prn, elst, azst)
 
 
 
