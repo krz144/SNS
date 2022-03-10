@@ -115,7 +115,7 @@ def satpos(nav, week, tow):
 
 
 satelita = satpos(nav, week, tow)
-print(satelita)
+print(f'{satelita=}')
 
 
 # Zajęcia 2
