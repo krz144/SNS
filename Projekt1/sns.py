@@ -1,5 +1,6 @@
 from datetime import date
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
     
 def read_yuma(almanac_file):
@@ -58,10 +59,10 @@ def date2tow(data):
 navall = read_yuma('yumagood.txt')  # 'yumagood.txt'
 data = [2022, 2, 25, 0, 0, 0]
 week, tow = date2tow(data)
-print(week, tow)
+# print(week, tow)
 
 nav = navall[0,:]
-print(nav)
+# print(nav)
 
 def satpos(nav, week, tow):
     """jedna duża funkcja, algorytm na TEAMS, zwracać ma x, y, z"""
@@ -115,7 +116,7 @@ def satpos(nav, week, tow):
 
 
 satelita = satpos(nav, week, tow)
-print(f'{satelita=}')
+# print(f'{satelita=}')
 
 
 # Zajęcia 2
@@ -150,28 +151,100 @@ def xyz2neu(fi, lam, A, B):
 
 fi, lam, h = 52, 21, 100
 odbiornik = geo2xyz(fi, lam, h)  # miejsce obserwacji, niekoniecznie odbiornik
-print(f'{odbiornik=}')
-
-
+# print(f'{odbiornik=}')
 # print(f'{satelita-odbiornik=}')
 
 # fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 # ax.scatter(3, 2)
 # plt.show()
 
+df = pd.DataFrame(navall, columns=['PRN', 'health', 'eccentricity', 'toa', 'oi', 'rora', 'sqrta', 'raaw', 'aop', 'ma', 'af0', 'af1', 'week'])
+
+xsat = []
+ysat = []
+zsat = []
+xodb = []
+yodb = []
+zodb = []
+nn = []
+ee = []
+uu = []
+az = []
+el = []
+
 for sat in navall:
     Xs = satpos(sat, week, tow)
+    xsat.append(Xs[0])
+    ysat.append(Xs[1])
+    zsat.append(Xs[2])
     Xr = odbiornik
+    xodb.append(Xr[0])
+    yodb.append(Xr[1])
+    zodb.append(Xr[2])
     # Xsr = Xs - Xr
-    neu = xyz2neu(52, 21, Xr, Xs)
+    neu = xyz2neu(fi, lam, Xr, Xs)
     n, e, u = neu
+    nn.append(n)
+    ee.append(e)
+    uu.append(u)
     Az = np.arctan2(e,n)  # arctan2 ???  # azymut
-    el = np.arcsin(u/np.sqrt(n**2 + e**2 + u**2))  # elewacja
+    ele = np.arcsin(u/np.sqrt(n**2 + e**2 + u**2))  # elewacja
     azst = np.rad2deg(Az)
-    elst = np.rad2deg(el)
-    prn = sat[0]
-    print(prn, elst, azst)
+    elst = np.rad2deg(ele)
+    az.append(azst)
+    el.append(elst)
+
+df['xsat'] = xsat
+df['ysat'] = ysat
+df['zsat'] = zsat
+df['xodb'] = xodb
+df['yodb'] = yodb
+df['zodb'] = zodb
+df['n'] = nn
+df['e'] = ee
+df['u'] = uu
+df['az'] = az
+df['el'] = el
 
 
+# Zajęcia 3
+df.set_index('PRN', inplace=True)
+df['distance'] = df.apply(lambda row : np.linalg.norm(np.array([row['xsat'], row['ysat'], row['zsat']]) - np.array([row['xodb'], row['yodb'], row['zodb']])), axis=1)
+df['Ax'] = df.apply(lambda row : -(row['xsat'] - row['xodb'])/row['distance'], axis=1)
+df['Ay'] = df.apply(lambda row : -(row['ysat'] - row['yodb'])/row['distance'], axis=1)
+df['Az'] = df.apply(lambda row : -(row['zsat'] - row['zodb'])/row['distance'], axis=1)
+
+print(df.info())
+maska = 10
+maska_df = df[df['el'] > maska]
+print(maska_df)
+A = maska_df[['Ax', 'Ay', 'Az']].to_numpy()
+wiersze = maska_df.shape[0]
+ones = np.array([np.repeat(1, wiersze)])
+A = np.concatenate((A, ones.T), axis=1)
+print(A)
+Q = np.linalg.inv(A.T @ A)
+print(Q)
+qx, qy, qz, qt = np.diagonal(Q)
+GDOP = np.sqrt(qx+qy+qz+qt)
+PDOP = np.sqrt(qx+qy+qz)
+TDOP = np.sqrt(qt)
+print(f'{GDOP = }\n{PDOP = }\n{TDOP = }')
+
+
+fi = np.deg2rad(fi)
+lam = np.deg2rad(lam)
+R = np.array([
+        [-np.sin(fi)*np.cos(lam), -np.sin(lam), np.cos(fi)*np.cos(lam)],
+        [-np.sin(fi)*np.sin(lam), np.cos(lam), np.cos(fi)*np.sin(lam)],
+        [np.cos(fi), 0, np.sin(fi)]])
+Qxyz = Q[:-1,:-1]
+Qneu = R.T @ Qxyz @ R
+# print(Qneu)
+
+qn, qe, qu = np.diagonal(Qneu)
+HDOP = np.sqrt(qn+qe)
+VDOP = np.sqrt(qu)
+print(f'{HDOP = }\n{VDOP = }')
 
 
