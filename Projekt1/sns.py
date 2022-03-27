@@ -57,7 +57,7 @@ def date2tow(data):
 
 
 navall = read_yuma('yumagood.txt')  # 'yumagood.txt'
-data = [2022, 2, 25, 0, 0, 0]
+data = [2022, 2, 25, 0, 0, 0]  #####################################################################
 week, tow = date2tow(data)
 # print(week, tow)
 
@@ -214,17 +214,18 @@ df['Ax'] = df.apply(lambda row : -(row['xsat'] - row['xodb'])/row['distance'], a
 df['Ay'] = df.apply(lambda row : -(row['ysat'] - row['yodb'])/row['distance'], axis=1)
 df['Az'] = df.apply(lambda row : -(row['zsat'] - row['zodb'])/row['distance'], axis=1)
 
-print(df.info())
+# print(df.info())
 maska = 10
 maska_df = df[df['el'] > maska]
 print(maska_df)
+print(maska_df.index.values)
 A = maska_df[['Ax', 'Ay', 'Az']].to_numpy()
 wiersze = maska_df.shape[0]
 ones = np.array([np.repeat(1, wiersze)])
 A = np.concatenate((A, ones.T), axis=1)
-print(A)
+# print(A)
 Q = np.linalg.inv(A.T @ A)
-print(Q)
+# print(Q)
 qx, qy, qz, qt = np.diagonal(Q)
 GDOP = np.sqrt(qx+qy+qz+qt)
 PDOP = np.sqrt(qx+qy+qz)
