@@ -20,8 +20,8 @@ urllib.request.urlretrieve(url_current, almanac_name)
 
 
 * wykresy:
-- OK- elewacja satelitów (24h w wybranycm dniu)
-- OK liczba widocznych satelitów (j.w.)
+- OK OK OK  elewacja satelitów (24h w wybranycm dniu)
+- OK OK OK liczba widocznych satelitów (j.w.)
 - OK współczynniki DOP (np wszystkie 5 na jednym wykresie)
 - OK skyplot - widoczność satelitów (wstawi kod na Teams, dorysować linie ruchu dla satelitów)
 - OK groundtrack (wstawi kod na Teams - mapka z liniami ruchu)
