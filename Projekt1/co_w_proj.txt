@@ -26,7 +26,7 @@ https://navcen.uscg.gov/?pageName=currentAlmanac&format=yuma
 - OK OK OK liczba widocznych satelitów (j.w.)
 - OK OK OK współczynniki DOP (np wszystkie 5 na jednym wykresie)
 - OK skyplot - widoczność satelitów (wstawi kod na Teams, dorysować linie ruchu dla satelitów)
-- OK groundtrack (wstawi kod na Teams - mapka z liniami ruchu)
+- OK OK OK groundtrack (wstawi kod na Teams - mapka z liniami ruchu)
 - * TODO pobieranie dowolngo almanachu
 - * TODO wybór dowolnych satelitów
 - * TODO widoczność globalna satelity w danej chwili (zielony/czerwony(niebieski) - mapka)
