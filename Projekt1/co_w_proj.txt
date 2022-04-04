@@ -15,6 +15,8 @@ urllib.request.urlretrieve(url_current, almanac_name)
 url: navcen.u cośtam cośtam currentAlm...
 https://navcen.uscg.gov/?pageName=currentAlmanac&format=yuma
 
+
+
 * krótkie sprawozdanie - instrukcja, jakie wyniki można uzyskać korzystając z programu,
 			 wklejamy screeny z programu, opis co gdzie ustawić, zmienić,
 			 ustawić datę itp. zmienic fi, lam
@@ -25,11 +27,11 @@ https://navcen.uscg.gov/?pageName=currentAlmanac&format=yuma
 - OK OK OK  elewacja satelitów (24h w wybranycm dniu)
 - OK OK OK liczba widocznych satelitów (j.w.)
 - OK OK OK współczynniki DOP (np wszystkie 5 na jednym wykresie)
-- OK skyplot - widoczność satelitów (wstawi kod na Teams, dorysować linie ruchu dla satelitów)
+- OK OK OK skyplot - widoczność satelitów (wstawi kod na Teams, dorysować linie ruchu dla satelitów)
 - OK OK OK groundtrack (wstawi kod na Teams - mapka z liniami ruchu)
 - * TODO pobieranie dowolngo almanachu
-- * TODO wybór dowolnych satelitów
-- * TODO widoczność globalna satelity w danej chwili (zielony/czerwony(niebieski) - mapka)
+- * TODO / OK wybór dowolnych satelitów
+- * TODO widoczność  globalna satelity w danej chwili (zielony/czerwony(niebieski) - mapka)
 
 
 
@@ -38,5 +40,3 @@ https://navcen.uscg.gov/?pageName=currentAlmanac&format=yuma
 - jednostki przy opisach osi
 
 * można w samym kodzie, można GUI
-
-#### Nowy kod skyplot na teams - arg: [ [PRN, el, az], [PRN, el, az], ]
