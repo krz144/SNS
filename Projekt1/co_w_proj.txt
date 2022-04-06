@@ -4,7 +4,7 @@ wybór:
 - OK maski
 - OK dowolnego miejsca obserwacji
 - OK dowolnej daty (całej doby)
-- TODO pliku + pobieranie almaachu na podstawie daty
+- OK pliku + pobieranie almaachu na podstawie daty
 
 (można bazować na tylko jednym pliku, ale można też pobrać aktualny - funkcjonalność)
 ^ urllib.request
@@ -17,7 +17,7 @@ https://navcen.uscg.gov/?pageName=currentAlmanac&format=yuma
 
 
 
-* krótkie sprawozdanie - instrukcja, jakie wyniki można uzyskać korzystając z programu,
+* TODO krótkie sprawozdanie - instrukcja, jakie wyniki można uzyskać korzystając z programu,
 			 wklejamy screeny z programu, opis co gdzie ustawić, zmienić,
 			 ustawić datę itp. zmienic fi, lam
 
@@ -29,9 +29,9 @@ https://navcen.uscg.gov/?pageName=currentAlmanac&format=yuma
 - OK OK OK współczynniki DOP (np wszystkie 5 na jednym wykresie)
 - OK OK OK skyplot - widoczność satelitów (wstawi kod na Teams, dorysować linie ruchu dla satelitów)
 - OK OK OK groundtrack (wstawi kod na Teams - mapka z liniami ruchu)
-- * TODO pobieranie dowolngo almanachu
-- * TODO / OK wybór dowolnych satelitów
-- * TODO widoczność  globalna satelity w danej chwili (zielony/czerwony(niebieski) - mapka)
+- * OK pobieranie dowolngo almanachu
+- * OK wybór dowolnych satelitów
+- * OK OK OK widoczność  globalna satelity w danej chwili (zielony/czerwony(niebieski) - mapka)
 
 
 
