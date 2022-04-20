@@ -324,7 +324,7 @@ for t in range(tow, tow_end+1, dt):
             ind_t = np.argmin(abs(roznica))
             nav0 = nav1[ind_t, :]
             xs0, ys0, zs0, dts = satpos(nav0, week, tr)
-            print(xs0, ys0, zs0, dts)
+            # print(xs0, ys0, zs0, dts)
             # ^ git
 
             try:
@@ -338,7 +338,7 @@ for t in range(tow, tow_end+1, dt):
             # print(xs_rot)
             xs, ys, zs = xs_rot[0], xs_rot[1], xs_rot[2]
             rho = np.sqrt((xs-xr)**2 + (ys-yr)**2 + (zs-zr)**2)
-
+            # print(f'{rho=}')
             # xr, yr, zr = ....
 
 
