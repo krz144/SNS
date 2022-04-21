@@ -2,6 +2,24 @@ import numpy as np
 from datetime import date
 from math import *
 
+def xyz2neu(fi, lam, A, B):
+    # def xyz2neu(A:punktodniesienia/startowy, B:koniecwektora):
+    """funkcja zamienia wsp kartezjańskie na topocentryczne neu
+    A, B reprezentują punkty, A to początek, B to koniec wektora
+    A, B są typu np.array i mają 3 współrzędne: x, y, z
+    fi, lam to współrzędne punktu A potrzebne do macierzy obrotu"""
+    # x, y, z -> north, east, up
+    # fi, lambda, lotniska
+    # wektor AB
+    fi = np.deg2rad(fi)
+    lam = np.deg2rad(lam)
+    rotation_matrix = np.array([
+        [-1*np.sin(fi)*np.cos(lam), -1*np.sin(lam), np.cos(fi)*np.cos(lam)],
+        [-1*np.sin(fi)*np.sin(lam), np.cos(lam), np.cos(fi)*np.sin(lam)],
+        [np.cos(fi), 0, np.sin(fi)]
+    ])
+    vector = B - A
+    return rotation_matrix.transpose() @ vector
 
 def Hirvonen(x, y, z, a=6378137, e2=0.00669437999013):
     """zwraca współrzędne fi, lambda, h. Algorytm Hirvonena"""
@@ -232,10 +250,10 @@ ind_t = np.argmin(abs(roznica))
 nav0 = nav1[ind_t, :]
 DATA = [2022,3,21,0,30,0]
 week, tow, dow = date2tow(DATA)
-print(week, tow)
-print(nav0)
+# print(week, tow)
+# print(nav0)
 X, Y, Z, dtrel = satpos(nav0, week, tow)
-print(X, Y, Z, dtrel)
+# print(X, Y, Z, dtrel)
 
 
 
@@ -256,12 +274,13 @@ obs_file = 'WROC00POL_R_20220800000_01D_30S_MO.rnx'
 # zdefiniowanie czasu obserwacji: daty początkowej i końcowej
 # dla pierwszej epoki z pliku będzie to:
 time_start =  [2022, 3, 21, 0, 0, 0]  
-time_end =    [2022, 3, 21, 0, 0, 30]  # 00:00:30
+time_end =    [2022, 3, 21, 0, 0, 15]  # 00:00:30
 # odczytanie danych z pliku obserwacyjnego
 # obs - pseudoodleglosci, iobs- nr satelity, czas doby, czas tygodnia
 # xr0 - wsp przyblizone odbiornika uklad XYZ
 # odczytanie danych z pliku nawigacyjnego
 obs, iobs, xr0 = readrnxobs(obs_file, time_start, time_end, 'G')
+print(f'{xr0=}')
 nav, inav = readrnxnav(nav_file)
 
 
@@ -288,9 +307,11 @@ iobs, obs = clean_data(iobs, obs, unhealthy_sats)
 # print(iobs)
 
 # instrukcja w main.py
-el_mask = 0
+el_mask = 10
 week, tow = date2tow(time_start)[0:2]
 week_end, tow_end = date2tow(time_end)[0:2]
+print(f'{week=} {tow=} {week_end=} {tow_end=}')
+
 
 dt = 30
 omge = 7.2921151467e-5
@@ -301,7 +322,14 @@ for t in range(tow, tow_end+1, dt):
     Pobs = obs[ind]
     # print(Pobs)
     sats = iobs[ind]
-    # print(sats)
+
+    print(sats)
+    taus = dict()
+    for sat in sats:
+        taus[sat[0]] = 0.072
+
+    print(f'{taus=}')
+
     XR = xr0
     xr, yr, zr = XR[0], XR[1], XR[2]
     # print(xr0)
@@ -309,10 +337,11 @@ for t in range(tow, tow_end+1, dt):
     tau = 0.072
     # krok 4. w main.py - WTF?
     for i in range(1):  # in rang 5
+
         for j, sat in enumerate(sats):
             tr = t - tau + dtr
-            print(j, sat, tr)
-
+            print(j, sat, tr)  # dla każdego satelity, w kazdej iteracji inna epoka
+            # do fcji obliczania wsp jako argument dajemy t(s), week, tablice efemerydow
             sat_nr = sat[0]
             ind = inav==sat_nr
             nav1 = nav[ind,:]
@@ -325,32 +354,30 @@ for t in range(tow, tow_end+1, dt):
             nav0 = nav1[ind_t, :]
             xs0, ys0, zs0, dts = satpos(nav0, week, tr)
             # print(xs0, ys0, zs0, dts)
-            # ^ git
+            print(f'{dts=}')
 
-            try:
-                tau = rho/c
-            except Exception:
-                tau = 0.072
-            # CZY TUTAJ nie powinien byc wektor xs, ys, zs? zamiast xs0?nvm
-            xs_rot = np.array([[np.cos(omge*tau), np.sin(omge*tau), 0],
-                               [-np.sin(omge*tau), np.cos(omge*tau), 0],
+            xs_rot = np.array([[np.cos(omge*taus[sat_nr]), np.sin(omge*taus[sat_nr]), 0],
+                               [-np.sin(omge*taus[sat_nr]), np.cos(omge*taus[sat_nr]), 0],
                                [0, 0, 1]]) @ np.array([xs0, ys0, zs0])
             # print(xs_rot)
             xs, ys, zs = xs_rot[0], xs_rot[1], xs_rot[2]
+            print(f'{xs=} {ys=} {zs=}')
             rho = np.sqrt((xs-xr)**2 + (ys-yr)**2 + (zs-zr)**2)
-            # print(f'{rho=}')
-            # xr, yr, zr = ....
+            print(f'{rho=}')
+            taus[sat_nr] = rho/c
+            # xr, yr, zr = ....  # w rho xr yr zr sie uaktualniaja
+            fii, lamm, h = Hirvonen(xr, yr, zr)
+            print(f'{fii=} {lamm=}')
+            n, e, u = xyz2neu(fii, lamm, np.array([xr, yr, zr]), np.array([xs, ys, zs]))
+            az = np.arctan2(e,n)  # azymut
+            ele = np.arcsin(u/np.sqrt(n**2 + e**2 + u**2))  # elewacja
+            azst = np.rad2deg(az)
+            elst = np.rad2deg(ele)
+            print(f'{azst=} {elst=}')
+            # tutaj odrzucenie satelitow ponizej maski
+            p_calc = rho - c*dts + c*dtr
+            print(f'{p_calc=}')
 
+        print(f'{i=} {taus=}')
 
-# t = tow
-# ind = iobs[:,-1]==t
-# obs_t = obs[ind, :]
-# iobs_t = iobs[ind, :]
-# sats=iobs_t[:, 0]
-# for sat in sats:
-#     ind_nav = inav == sat
-#     nav_sat = nav[ind_nav]  # [:,0] ???
-#     print(nav_sat)
-#     x, dts = satpos(t, week, nav_sat)
-# ^ UP ^ ten blok w pętli t in range
 
