@@ -1,7 +1,8 @@
 import numpy as np
 import math
+from numba import jit
 
-
+@jit(cache=True)
 def klobuchar(tow, phi, lam, el, az, alfa, beta):
     '''
 

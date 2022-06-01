@@ -1,18 +1,20 @@
 import numpy as np
+from numba import jit
 
-
+@jit(cache=True)
 def md(el):
     # el = angle in RADIANS - przyjmuje np.sin
     # el - PODAJEMY W STOPNIACH DO PIERWIASTKA i do funkcji
     # caly pierwiastek na radiany przeliczyc
     return 1/np.sin(np.radians(np.sqrt(el**2 + 6.25)))
 
-
+@jit(cache=True)
 def mw(el):
     return 1/np.sin(np.radians(np.sqrt(el**2 + 2.25)))
 
 
 # wszystkie argumenty: h(GRS80), el_sat
+@jit(cache=True)
 def poprawka_toposferyczna(h_el, el_sat, N=40):
     # Model Saastamoinena
     h = h_el - N
